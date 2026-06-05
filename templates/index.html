@@ -1,1 +1,175 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediGuide AI — WHO-Informed Health Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="app-wrap">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">✚</div>
+      <div>
+        <div class="brand-name">MediGuide AI</div>
+        <div class="brand-tag">WHO-Informed</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-view="diagnose">
+        <span class="nav-icon">🔬</span> Diagnose
+      </a>
+      <a href="#" class="nav-item" data-view="history">
+        <span class="nav-icon">📋</span> History
+      </a>
+      <a href="#" class="nav-item" data-view="about">
+        <span class="nav-icon">ℹ️</span> About
+      </a>
+    </nav>
+
+    <div class="api-key-box">
+      <label>Gemini API Key</label>
+      <input type="password" id="apiKey" placeholder="AIzaSy..." />
+      <small>Free — no credit card needed</small>
+    </div>
+
+    <div class="sidebar-stats" id="sidebarStats">
+      <div class="stat-item"><span id="statTotal">0</span><small>Consultations</small></div>
+      <div class="stat-item"><span id="statEmergency">0</span><small>Emergencies</small></div>
+    </div>
+
+    <div class="sidebar-footer">
+      <p>Powered by WHO ICD-11 Guidelines</p>
+      <p>Not a substitute for professional medical care</p>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- DIAGNOSE VIEW -->
+    <div class="view active" id="view-diagnose">
+      <div class="page-header">
+        <h1>Health Consultation</h1>
+        <p>Describe your symptoms or upload a photo for WHO-informed analysis</p>
+      </div>
+
+      <div class="consult-grid">
+        <!-- Input Card -->
+        <div class="card input-card">
+          <div class="input-tabs">
+            <button class="tab-btn active" data-tab="symptoms">📝 Symptoms</button>
+            <button class="tab-btn" data-tab="image">📷 Image</button>
+            <button class="tab-btn" data-tab="both">🔗 Both</button>
+          </div>
+
+          <div class="tab-content active" id="tab-symptoms">
+            <label class="field-label">Describe your symptoms in detail</label>
+            <textarea id="symptomsText" rows="6" placeholder="e.g. I have had a high fever for 3 days, severe headache, joint pains, and I noticed a rash on my arms. I also feel very tired and have no appetite..."></textarea>
+            <div class="field-hint">Be as detailed as possible — duration, severity, location</div>
+          </div>
+
+          <div class="tab-content" id="tab-image">
+            <label class="field-label">Upload a photo of your condition</label>
+            <div class="upload-zone" id="uploadZone">
+              <div class="upload-icon">📸</div>
+              <div class="upload-text">Click or drag an image here</div>
+              <div class="upload-hint">Skin conditions, wounds, rashes, eye conditions, swelling</div>
+              <input type="file" id="imageInput" accept="image/*" hidden>
+            </div>
+            <div id="imagePreview" class="image-preview hidden"></div>
+          </div>
+
+          <div class="tab-content" id="tab-both">
+            <label class="field-label">Describe your symptoms</label>
+            <textarea id="symptomsTextBoth" rows="4" placeholder="Describe what you feel..."></textarea>
+            <label class="field-label" style="margin-top:1rem">Upload an image</label>
+            <div class="upload-zone upload-zone-sm" id="uploadZoneBoth">
+              <div class="upload-icon">📸</div>
+              <div class="upload-text">Click to upload image</div>
+              <input type="file" id="imageInputBoth" accept="image/*" hidden>
+            </div>
+            <div id="imagePreviewBoth" class="image-preview hidden"></div>
+          </div>
+
+          <button class="analyze-btn" id="analyzeBtn">
+            <span class="btn-icon">🔍</span>
+            <span class="btn-text">Analyze with WHO Guidelines</span>
+          </button>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card results-card" id="resultsCard">
+          <div class="results-empty" id="resultsEmpty">
+            <div class="empty-icon">🏥</div>
+            <h3>Your diagnosis will appear here</h3>
+            <p>Enter symptoms or upload an image to get started</p>
+          </div>
+          <div class="results-content hidden" id="resultsContent"></div>
+          <div class="results-loading hidden" id="resultsLoading">
+            <div class="loading-pulse">
+              <div class="pulse-ring"></div>
+              <div class="pulse-dot">✚</div>
+            </div>
+            <p>Analyzing with WHO guidelines...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY VIEW -->
+    <div class="view hidden" id="view-history">
+      <div class="page-header">
+        <h1>Consultation History</h1>
+        <p>Your past health consultations stored locally</p>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </div>
+
+    <!-- ABOUT VIEW -->
+    <div class="view hidden" id="view-about">
+      <div class="page-header">
+        <h1>About MediGuide AI</h1>
+      </div>
+      <div class="about-grid">
+        <div class="card about-card">
+          <div class="about-icon">🌍</div>
+          <h3>WHO ICD-11 Powered</h3>
+          <p>Every diagnosis uses the WHO International Classification of Diseases (ICD-11) — the global standard covering 55,000+ conditions.</p>
+        </div>
+        <div class="card about-card">
+          <div class="about-icon">💊</div>
+          <h3>Essential Medicines Only</h3>
+          <p>Medicine recommendations come exclusively from the WHO Essential Medicines List 2023 — safe, effective, and globally accessible.</p>
+        </div>
+        <div class="card about-card">
+          <div class="about-icon">📷</div>
+          <h3>Image Analysis</h3>
+          <p>Upload photos of skin conditions, wounds, rashes, or eye conditions for AI-powered visual diagnosis alongside symptom analysis.</p>
+        </div>
+        <div class="card about-card">
+          <div class="about-icon">🔒</div>
+          <h3>Private & Secure</h3>
+          <p>Your API key is never stored. Consultations are saved only in your local SQLite database on your own machine.</p>
+        </div>
+        <div class="card about-card warning-card">
+          <div class="about-icon">⚠️</div>
+          <h3>Medical Disclaimer</h3>
+          <p>MediGuide AI provides general health information based on WHO guidelines. It is NOT a substitute for professional medical diagnosis, advice, or treatment. Always consult a qualified healthcare provider for serious conditions.</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
