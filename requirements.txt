@@ -1,0 +1,5 @@
+@"
+flask>=3.0.0
+google-genai>=2.8.0
+gunicorn
+"@ | Out-File -FilePath requirements.txt -Encoding utf8
